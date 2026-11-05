@@ -1,0 +1,38 @@
+# Managed by ArgoCD from Gitea. Edit here and push; don't kubectl apply.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mailpit
+  namespace: ai-agent
+  labels:
+    app: mailpit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mailpit
+  template:
+    metadata:
+      labels:
+        app: mailpit
+    spec:
+      containers:
+      - name: mailpit
+        image: axllent/mailpit:latest
+        ports:
+        - containerPort: 1025
+          name: smtp
+        - containerPort: 8025
+          name: http
+        resources:
+          requests:
+            cpu: 20m
+            memory: 32Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+        readinessProbe:
+          tcpSocket:
+            port: 1025
+          initialDelaySeconds: 3
+          periodSeconds: 10

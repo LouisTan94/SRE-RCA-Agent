@@ -1,0 +1,13 @@
+# Managed by ArgoCD from Gitea. Edit here and push; don't kubectl apply.
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+  namespace: apps
+spec:
+  selector:
+    app: product-service
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000

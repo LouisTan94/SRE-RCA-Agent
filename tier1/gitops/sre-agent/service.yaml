@@ -1,0 +1,13 @@
+# Managed by ArgoCD from Gitea. Edit here and push; don't kubectl apply.
+apiVersion: v1
+kind: Service
+metadata:
+  name: sre-agent
+  namespace: ai-agent
+spec:
+  selector:
+    app: sre-agent
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8000

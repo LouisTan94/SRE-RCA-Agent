@@ -1,0 +1,44 @@
+# Managed by ArgoCD from Gitea. Edit here and push; don't kubectl apply.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+  namespace: apps
+  labels:
+    app: product-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product-service
+  template:
+    metadata:
+      labels:
+        app: product-service
+    spec:
+      containers:
+      - name: product-service
+        image: local/product-service
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+          name: http
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 15

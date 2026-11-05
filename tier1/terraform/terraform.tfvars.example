@@ -1,0 +1,5 @@
+# Copy to terraform.tfvars to override defaults. All values are optional.
+# cluster_name = "sre-tier1"
+# cpus         = 4
+# memory       = "6g"
+# disk_size    = "30g"

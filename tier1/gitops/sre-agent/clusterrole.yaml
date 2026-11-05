@@ -1,0 +1,46 @@
+# Managed by ArgoCD from Gitea. Edit here and push; don't kubectl apply.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sre-agent-readonly
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  - pods/log
+  - events
+  - nodes
+  - namespaces
+  - services
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - replicasets
+  - statefulsets
+  - daemonsets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - metrics.k8s.io
+  resources:
+  - pods
+  - nodes
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - argoproj.io
+  resources:
+  - applications
+  verbs:
+  - get
+  - list

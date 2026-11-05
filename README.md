@@ -7,7 +7,9 @@ An enterprise-grade, end-to-end Kubernetes platform featuring:
 - 🧠 **Autonomous AI SRE Agent:** Continuous Kubernetes cluster observer that gathers logs, container exit codes, and Warning events to diagnose incidents, perform Root Cause Analysis (RCA) with Claude or automated heuristics, and dispatch **email notifications with an attached interactive HTML RCA report**.
 - 💥 **Integrated Chaos Testing:** Built-in chaos endpoints to simulate real-world failure scenarios (`OOMKilled`, `CrashLoopBackOff`, and Database pool exhaustion) for instant demonstration.
 
-> **Run it locally:** see [`local/README.md`](local/README.md) to run everything on minikube with Docker (no AWS needed).
+> **Run it locally (no AWS):**
+> - [`tier1/README.md`](tier1/README.md): Terraform + ArgoCD GitOps + agentic SDLC (Claude coder/tester/reviewer subagents) on one minikube cluster.
+> - [`local/README.md`](local/README.md): the quick kubectl-only version.
 
 ---
 

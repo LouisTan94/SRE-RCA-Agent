@@ -1,0 +1,66 @@
+# Managed by ArgoCD from Gitea. Edit here and push; don't kubectl apply.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sre-agent
+  namespace: ai-agent
+  labels:
+    app: sre-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sre-agent
+  template:
+    metadata:
+      labels:
+        app: sre-agent
+    spec:
+      serviceAccountName: sre-agent
+      containers:
+      - name: agent
+        image: local/sre-agent
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+          name: http
+        envFrom:
+        - configMapRef:
+            name: sre-agent-config
+        env:
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: agent-secrets
+              key: anthropic_api_key
+              optional: true
+        - name: AGENT_MODEL
+          valueFrom:
+            secretKeyRef:
+              name: agent-secrets
+              key: agent_model
+              optional: true
+        - name: AGENT_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: agent-secrets
+              key: agent_api_key
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 15

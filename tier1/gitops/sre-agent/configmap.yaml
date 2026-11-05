@@ -1,0 +1,15 @@
+# Managed by ArgoCD from Gitea. Edit here and push; don't kubectl apply.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sre-agent-config
+  namespace: ai-agent
+data:
+  ALLOWED_NAMESPACES: default,apps,ai-agent
+  REPORT_TIMEZONE: Asia/Singapore
+  EMAIL_PROVIDER: smtp
+  SMTP_HOST: mailpit.ai-agent.svc.cluster.local
+  SMTP_PORT: '1025'
+  SMTP_TLS: 'false'
+  SMTP_FROM: sre-agent@local.test
+  SES_SENDER: sre-agent@local.test
