@@ -27,12 +27,12 @@ load_gitea_creds
 
 say "Creating the Gitea admin user '$GITEA_USER'"
 kc -n gitea rollout status deploy/gitea --timeout=300s >/dev/null
-if kc -n gitea exec deploy/gitea -- gitea --work-path /var/lib/gitea --config /etc/gitea/app.ini \
-     admin user list 2>/dev/null | awk '{print $2}' | grep -qx "$GITEA_USER"; then
+if kc -n gitea exec deploy/gitea -- gitea admin user list \
+     2>/dev/null | awk '{print $2}' | grep -qx "$GITEA_USER"; then
   ok "user exists"
 else
-  kc -n gitea exec deploy/gitea -- gitea --work-path /var/lib/gitea --config /etc/gitea/app.ini \
-    admin user create --admin --username "$GITEA_USER" --password "$GITEA_PASS" \
+  kc -n gitea exec deploy/gitea -- gitea admin user create --admin \
+    --username "$GITEA_USER" --password "$GITEA_PASS" \
     --email "$GITEA_USER@local.test" --must-change-password=false >/dev/null
   ok "user created"
 fi
