@@ -1,0 +1,121 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sre-agent
+  namespace: ai-agent
+---
+# Read-only, as in the original project.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sre-agent-readonly
+rules:
+- apiGroups: [""]
+  resources: [pods, pods/log, events, nodes, namespaces, services, configmaps]
+  verbs: [get, list, watch]
+- apiGroups: ["apps"]
+  resources: [deployments, replicasets, statefulsets, daemonsets]
+  verbs: [get, list, watch]
+- apiGroups: ["metrics.k8s.io"]
+  resources: [pods, nodes]
+  verbs: [get, list]
+- apiGroups: ["argoproj.io"]   # harmless if ArgoCD isn't installed
+  resources: [applications]
+  verbs: [get, list]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sre-agent-readonly
+subjects:
+- kind: ServiceAccount
+  name: sre-agent
+  namespace: ai-agent
+roleRef:
+  kind: ClusterRole
+  name: sre-agent-readonly
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sre-agent-config
+  namespace: ai-agent
+data:
+  # kube-system is left out so minikube's own pods don't show up as "incidents".
+  ALLOWED_NAMESPACES: "default,apps,ai-agent"
+  REPORT_TIMEZONE: "Asia/Singapore"
+  EMAIL_PROVIDER: "smtp"
+  SMTP_HOST: "mailpit.ai-agent.svc.cluster.local"
+  SMTP_PORT: "1025"
+  SMTP_TLS: "false"
+  SMTP_FROM: "sre-agent@local.test"
+  SES_SENDER: "sre-agent@local.test"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sre-agent
+  namespace: ai-agent
+  labels:
+    app: sre-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sre-agent
+  template:
+    metadata:
+      labels:
+        app: sre-agent
+    spec:
+      serviceAccountName: sre-agent
+      containers:
+      - name: agent
+        image: local/sre-agent:dev   # built straight into minikube by up.sh
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+          name: http
+        envFrom:
+        - configMapRef:
+            name: sre-agent-config
+        env:
+        # Created by up.sh from local/.env
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef: {name: agent-secrets, key: anthropic_api_key, optional: true}
+        - name: AGENT_MODEL
+          valueFrom:
+            secretKeyRef: {name: agent-secrets, key: agent_model, optional: true}
+        - name: AGENT_API_KEY
+          valueFrom:
+            secretKeyRef: {name: agent-secrets, key: agent_api_key}
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        readinessProbe:
+          httpGet: {path: /healthz, port: 8000}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet: {path: /healthz, port: 8000}
+          initialDelaySeconds: 10
+          periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sre-agent
+  namespace: ai-agent
+spec:
+  selector:
+    app: sre-agent
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8000

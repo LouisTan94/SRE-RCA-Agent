@@ -17,6 +17,9 @@ SMTP_USER = os.getenv("SMTP_USER", "")
 SMTP_PASS = os.getenv("SMTP_PASS", "")
 SMTP_TLS = os.getenv("SMTP_TLS", "true").lower() in ("true", "1", "yes")
 
+# auto (original behaviour: SES -> SMTP -> file) | ses | smtp | file
+EMAIL_PROVIDER = os.getenv("EMAIL_PROVIDER", "auto").lower()
+
 def build_mime_message(to: list[str], subject: str, body_html: str, attachment_html: str, filename: str) -> MIMEMultipart:
     msg = MIMEMultipart("mixed")
     msg["Subject"] = subject
@@ -59,14 +62,14 @@ def send_rca_email(to: list[str], subject: str, body_html: str, attachment_html:
     msg = build_mime_message(to, subject, body_html, attachment_html, filename)
 
     # Try AWS SES first if AWS credentials/IAM role exist
-    if os.getenv("AWS_EXECUTION_ENV") or os.getenv("AWS_ROLE_ARN") or os.getenv("AWS_ACCESS_KEY_ID") or os.getenv("KUBERNETES_SERVICE_HOST"):
+    if EMAIL_PROVIDER == "ses" or EMAIL_PROVIDER == "auto" and (os.getenv("AWS_EXECUTION_ENV") or os.getenv("AWS_ROLE_ARN") or os.getenv("AWS_ACCESS_KEY_ID") or os.getenv("KUBERNETES_SERVICE_HOST")):
         try:
             return send_via_ses(to, msg)
         except Exception as e:
             logger.warning("AWS SES send failed: %s. Checking SMTP configuration...", e)
 
     # Try SMTP if configured
-    if SMTP_HOST:
+    if SMTP_HOST and EMAIL_PROVIDER in ("auto", "smtp"):
         try:
             return send_via_smtp(to, msg)
         except Exception as e:

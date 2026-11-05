@@ -1,8 +1,9 @@
 import os
 import html
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
-IST = timezone(timedelta(hours=5, minutes=30), name="IST")
+REPORT_TZ = ZoneInfo(os.getenv("REPORT_TIMEZONE", "Asia/Kolkata"))
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
@@ -14,8 +15,8 @@ LATEST_REPORT: dict = {}
 
 def render_rca(rca: dict) -> tuple[str, str]:
     global LATEST_REPORT
-    now = datetime.now(IST)
-    timestamp_str = now.strftime("%Y-%m-%d %H:%M IST")
+    now = datetime.now(REPORT_TZ)
+    timestamp_str = now.strftime("%Y-%m-%d %H:%M %Z")
     page = env.get_template("rca.html.j2").render(r=rca, generated=timestamp_str)
     
     os.makedirs(REPORT_DIR, exist_ok=True)

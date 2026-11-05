@@ -39,3 +39,6 @@ build/
 # ── Reports / tmp ────────────────────────────────────────────
 /tmp/
 reports/
+
+# local minikube secrets
+local/.env
