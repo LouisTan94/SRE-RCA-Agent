@@ -50,20 +50,40 @@ Provisioned by Terraform on minikube with the Docker driver.
 
 ---
 
-## How to Start Everything
+## How to Restart the Cluster
 
-Open **Git Bash** (not PowerShell/WSL) from the repo root:
+> Use this every time you come back. The cluster state (pods, secrets, Gitea, ArgoCD) is fully preserved.
+
+Open **Git Bash** from the repo root:
 
 ```bash
 cd /c/Users/kaisi/Documents/SRE-RCA-Agent
 
-# 1. Start the cluster (if it was stopped)
+# 1. Resume the cluster (Docker Desktop must be running first)
 minikube start -p sre-tier1
 
-# 2. Open port-forwards (keep this terminal open)
+# 2. Open port-forwards in a terminal — keep it open
 export PATH="$PATH:/c/Windows/System32"
 bash ./tier1/scripts/forward.sh
+
+# 3. (Optional) Open the UI dashboard in a second terminal
+kubectl --context sre-tier1 -n apps port-forward svc/ui 9090:8000
 ```
+
+**URLs after restart:**
+| Service | URL |
+|---------|-----|
+| Platform UI | http://localhost:9090 |
+| ArgoCD | http://localhost:8090 |
+| Gitea | http://localhost:3000 |
+| SRE Agent | http://localhost:8080/docs |
+| Mailpit | http://localhost:8025 |
+
+> **Tip:** Add `export PATH="$PATH:/c/Windows/System32"` to `~/.bashrc` so you don't need to run it every time.
+
+---
+
+## How to Start Everything (First Time / After Full Teardown)
 
 ### URLs
 | Service | URL | Credentials |
